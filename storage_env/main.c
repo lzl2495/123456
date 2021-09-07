@@ -39,18 +39,70 @@ pthread_t tid_client_request,
 		  tid_camera, 
 		  tid_sms;
 
+
 int create_pthread(void);
 void free_resources(void);
 
 int main(int argc, const char *argv[])
 {
 	//创建各模块线程
-
+/*
 	if(create_pthread() != 0);	
 	{
 		ERR_MSG("pthread_create");
 		return -1;
 	}
+	*/
+if(pthread_create(&tid_client_request, NULL,pthread_client_request, NULL) != 0)
+	{
+		ERR_MSG("pthread_create tid_client_request");
+		return -1;
+	}
+
+	if(pthread_create(&tid_refresh, NULL, pthread_refresh, NULL) != 0)
+	{
+		ERR_MSG("pthread_create tid_refresh");
+		return -1;
+	}
+
+	if(pthread_create(&tid_sqlite, NULL, pthread_sqlite, NULL) != 0)
+	{
+		ERR_MSG("pthread_create tid_sqlite");
+		return -1;
+	}
+/*
+	if(pthread_create(&tid_transfer, NULL, pthread_transfer, NULL) != 0)
+	{
+		ERR_MSG("pthread_create tid_transfer");
+		return -1;
+	}
+*/
+	if(pthread_create(&tid_analysis, NULL, pthread_analysis, NULL) != 0)
+	{
+		ERR_MSG("pthread_create tid_analysis");
+		return -1;
+	}
+
+	if(pthread_create(&tid_buzzer, NULL, pthread_buzzer, NULL) != 0)
+	{
+		ERR_MSG("pthread_create tid_buzzer");
+		return -1;
+	}
+
+	if(pthread_create(&tid_led, NULL, pthread_led, NULL) != 0)
+	{
+		ERR_MSG("pthread_create tid_led");
+		return -1;
+	}
+
+	if(pthread_create(&tid_camera, NULL, pthread_camera, NULL) != 0)
+	{
+	ERR_MSG("pthread_create tid_camera");
+	return -1;
+	}
+
+
+
 	free_resources();
 
 	exit(0);
@@ -75,13 +127,13 @@ int create_pthread(void)
 		ERR_MSG("pthread_create tid_sqlite");
 		return -1;
 	}
-
+/*
 	if(pthread_create(&tid_transfer, NULL, pthread_transfer, NULL) != 0)
 	{
 		ERR_MSG("pthread_create tid_transfer");
 		return -1;
 	}
-
+*/
 	if(pthread_create(&tid_analysis, NULL, pthread_analysis, NULL) != 0)
 	{
 		ERR_MSG("pthread_create tid_analysis");

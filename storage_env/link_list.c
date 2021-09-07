@@ -1,7 +1,7 @@
 #include "link_list.h"
 
 
-extern linklist linkHead; //头结点
+linklist linkHead; //头结点
 
 linklist CreateEmptyLinklist(void)
 {
@@ -15,7 +15,7 @@ linklist CreateEmptyLinklist(void)
 
 static linklist Create_DataNode(void)
 {
-	linklist node = (void *)malloc(sizeof(Linklist));
+	linklist node = (linklist)malloc(sizeof(Linklist));
 	if(node == NULL)
 		return NULL;
 	node->next = NULL;
@@ -39,3 +39,16 @@ int InsertLinknode(link_datatype buf)
 
 	return 0;
 }
+
+
+linklist GetLinknode(linklist linkHead)
+{
+	linklist node = NULL;
+	if(linkHead->next == NULL)
+		return NULL;
+	node = linkHead->next;
+	linkHead->next = node->next;
+
+	return node;
+}
+

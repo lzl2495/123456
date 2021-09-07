@@ -10,7 +10,8 @@
 #include <sys/stat.h>
 #include <sys/ipc.h>
 #include <pthread.h>
-#include "link_list.h"
+#include <sys/msg.h>
+//#include "link_list.h"
 
 #define ERR_MSG(msg) do{ \
 	printf("__%d__,%s\n",__LINE__,__func__);\
@@ -19,6 +20,7 @@
 
 #define QUEUE_MSG_LEN 128
 #define DEV_ZIGBEE "/dev/ttyUSB0"
+#define STO_NO 1
 
 //仓库信息结构体
 struct storage_env_info
@@ -74,8 +76,7 @@ struct setEnv
 struct msg
 {
 	long msgtype;  // 消息类型
-	unsigned char text[QUEUE_MSG_LEN];  //消息正文
-
+	unsigned int text[QUEUE_MSG_LEN];  //消息正文
 };
 
 void *pthread_client_request(void *arg);  //处理消息队列里请求的线程.
@@ -84,6 +85,7 @@ void *pthread_sqlite(void *arg);   //数据库线程.
 void *pthread_transfer(void *arg);   //接收M0数据线程.
 void *pthread_analysis(void *arg);   //M0数据分析线程.
 void *pthread_buzzer(void *arg);    //A7蜂鸣器控制线程.
+void *pthread_M0_control(void *arg); //控制M0线程
 void *pthread_led(void *arg);    //A7LED模块线程.
 void *pthread_camera(void *arg);   //摄像头模块控制线程.
 //void *pthread_sms(void *arg);   //短信模块控制线程.
@@ -117,11 +119,10 @@ extern pthread_mutex_t mutex_global;   //全局变量保护互斥锁
 extern pthread_mutex_t mutex_linklist;  //接受数据缓存互斥锁
 
 struct storage_env_info storage_RT;
-struct storage_env_info env_info_clien_addr_s;
 
 int dev_uart_fd;  //M0模块文件描述符
-linklist linkHead;  //M0消息接受链表
-linklist slinkHead; //处理M0消息的
+//linklist linkHead;  //M0消息接受链表
+//slinklist slinkHead; //处理M0消息的
 
 int msgid;
 
