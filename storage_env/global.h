@@ -18,6 +18,7 @@
 	perror(msg);\
 }while(0);
 
+
 #define QUEUE_MSG_LEN 128
 #define DEV_ZIGBEE "/dev/ttyUSB0"
 #define STO_NO 1
@@ -101,6 +102,8 @@ extern pthread_cond_t cond_led;  //A7LED模块线程被唤醒条件变量
 extern pthread_cond_t cond_camera;  //摄像头模块控制线程被唤醒条件
 extern pthread_cond_t cond_sms;  //短信模块控制线程被唤醒条件变量
 extern pthread_cond_t cond_refresh;  //更新共享内存里的实时数据线程被唤醒条件变量
+extern pthread_cond_t cond_M0;  //M0控制命令发送线程被唤醒条件变量
+
 
 //互斥锁
 extern pthread_mutex_t mutex_slinklist;  //数据库缓存互斥锁
@@ -117,8 +120,11 @@ extern pthread_mutex_t mutex_refresh;  //更新共享内存里的实时数据线
 extern pthread_mutex_t mutex_refresh_updata;  //更新共享内存里的实时数据互斥锁
 extern pthread_mutex_t mutex_global;   //全局变量保护互斥锁
 extern pthread_mutex_t mutex_linklist;  //接受数据缓存互斥锁
+extern pthread_mutex_t mutex_M0;  //M0控制命令发送线程被唤醒条件变量
 
 struct storage_env_info storage_RT;
+struct msg global_msg;
+
 
 int dev_uart_fd;  //M0模块文件描述符
 //linklist linkHead;  //M0消息接受链表

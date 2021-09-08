@@ -256,17 +256,24 @@ void getEnvPackage (link_datatype *buf)
 	printf ("no = %d tem = %0.2f hum = %0.2f ill = %0.2f battery = %0.2f adc = %0.2f x = %d y %d z = %d\n", sto_no,
 			current.temperature, current.humidity, current.illumination, current.battery, current.adc, current.x, current.y, current.z);
 
-	checkEnv ( &current);	
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
+//	checkEnv (&current);	
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 
 	pthread_mutex_lock (&mutex_global);
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 	storage_RT = current;
 	pthread_mutex_lock (&mutex_slinklist);
-	sqlite_InsertLinknode (COLLECT_INSERTER, storage_RT, sto_no, 0);
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
+	sqlite_InsertLinknode(COLLECT_INSERTER, storage_RT, sto_no, 0);
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 	pthread_mutex_unlock (&mutex_slinklist);
 	pthread_mutex_unlock (&mutex_global);
 
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 	pthread_cond_signal (&cond_refresh);
 	pthread_cond_signal (&cond_sqlite);
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 	return ;
 }
 
@@ -277,39 +284,50 @@ void *pthread_analysis(void *arg)
 	int sto_no = STO_NO;
 
 	printf("this is pthread_analysis\n");
-	linklist node;
+	linklist node = NULL;
 	link_datatype buf;
+	printf("linkHead = %p __%d__\n ",linkHead,__LINE__);
 
 	while(1)
 	{
-		pthread_mutex_lock (&mutex_analysis);
-		pthread_cond_wait (&cond_analysis, &mutex_analysis);
-		pthread_mutex_unlock (&mutex_analysis);
+		printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
+		pthread_mutex_lock(&mutex_analysis);
+		pthread_cond_wait(&cond_analysis, &mutex_analysis);
+		pthread_mutex_unlock(&mutex_analysis);
+		printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 
 		while (1)
 		{
-			pthread_mutex_lock (&mutex_linklist);
-			if ((node = GetLinknode (linkHead)) == NULL)
+			pthread_mutex_lock(&mutex_linklist);
+			printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
+			if ((node = GetLinknode(linkHead)) == NULL)
 			{
-				pthread_mutex_unlock (&mutex_linklist);
+				pthread_mutex_unlock(&mutex_linklist);
 				break;
 			}
+			printf("node = %p __%d__\n ",node,__LINE__);
+			printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 			buf = node->buf;
 			free (node);
+			node = NULL;
 			pthread_mutex_unlock (&mutex_linklist);
 			if ('e' == buf.msg_type)
 			{
+				printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 				getEnvPackage (&buf);
 			}
 			else if ('u' == buf.msg_type)
 			{
+				printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 				pthread_mutex_lock (&mutex_slinklist);
 				sqlite_InsertLinknode (STORAGE_UPDATE, storage_RT, sto_no, 0);
+				printf("%s:  %s: __%d__shead: %p\n",__FILE__,__func__,__LINE__,slinkHead);
 				pthread_mutex_unlock (&mutex_slinklist);
 				pthread_cond_signal (&cond_sqlite);
 
 			}
 		}
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 	}
 	pthread_exit(NULL);
 }

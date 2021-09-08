@@ -13,6 +13,7 @@ pthread_cond_t            cond_led = PTHREAD_COND_INITIALIZER;   //A7LED模块�
 pthread_cond_t         cond_camera = PTHREAD_COND_INITIALIZER;   //摄像头模块控制线程被唤醒条件
 pthread_cond_t            cond_sms = PTHREAD_COND_INITIALIZER;   //短信模块控制线程被唤醒条件变量
 pthread_cond_t        cond_refresh = PTHREAD_COND_INITIALIZER;   //更新共享内存里的实时数据线程被唤醒条件变量
+pthread_cond_t             cond_M0 = PTHREAD_COND_INITIALIZER;   //更新共享内存里的实时数据线程被唤醒条件变量
 
 pthread_mutex_t 		mutex_slinklist = PTHREAD_MUTEX_INITIALIZER;  //数据库缓存互斥锁
 pthread_mutex_t 		   mutex_sqlite = PTHREAD_MUTEX_INITIALIZER;  //数据库线程互斥锁
@@ -27,7 +28,8 @@ pthread_mutex_t            mutex_sms = PTHREAD_MUTEX_INITIALIZER;   //短信模�
 pthread_mutex_t        mutex_refresh = PTHREAD_MUTEX_INITIALIZER;  //更新共享内存里的实时数据线程互斥锁
 pthread_mutex_t mutex_refresh_updata = PTHREAD_MUTEX_INITIALIZER;  //更新共享内存里的实时数据互斥锁
 pthread_mutex_t         mutex_global = PTHREAD_MUTEX_INITIALIZER;   //全局变量保护互斥锁
-pthread_mutex_t 		 mutex_linklist = PTHREAD_MUTEX_INITIALIZER;  //接受数据缓存互斥锁
+pthread_mutex_t 	  mutex_linklist = PTHREAD_MUTEX_INITIALIZER;  //接受数据缓存互斥锁
+pthread_mutex_t 	        mutex_M0 = PTHREAD_MUTEX_INITIALIZER;  //接受数据缓存互斥锁
 
 pthread_t tid_client_request,
 		  tid_refresh, 
@@ -37,7 +39,8 @@ pthread_t tid_client_request,
 		  tid_buzzer, 
 		  tid_led, 
 		  tid_camera, 
-		  tid_sms;
+		  tid_sms,
+		  tid_M0_control;
 
 
 int create_pthread(void);
@@ -65,18 +68,25 @@ if(pthread_create(&tid_client_request, NULL,pthread_client_request, NULL) != 0)
 		return -1;
 	}
 
+	if(pthread_create(&tid_M0_control, NULL, pthread_M0_control, NULL) != 0)
+	{
+		ERR_MSG("pthread_create tid_M0_control");
+		return -1;
+	}
+
+
 	if(pthread_create(&tid_sqlite, NULL, pthread_sqlite, NULL) != 0)
 	{
 		ERR_MSG("pthread_create tid_sqlite");
 		return -1;
 	}
-/*
+
 	if(pthread_create(&tid_transfer, NULL, pthread_transfer, NULL) != 0)
 	{
 		ERR_MSG("pthread_create tid_transfer");
 		return -1;
 	}
-*/
+
 	if(pthread_create(&tid_analysis, NULL, pthread_analysis, NULL) != 0)
 	{
 		ERR_MSG("pthread_create tid_analysis");
@@ -122,18 +132,24 @@ int create_pthread(void)
 		return -1;
 	}
 
+	if(pthread_create(&tid_M0_control, NULL, pthread_M0_control, NULL) != 0)
+	{
+		ERR_MSG("pthread_create tid_M0_control");
+		return -1;
+	}
+
 	if(pthread_create(&tid_sqlite, NULL, pthread_sqlite, NULL) != 0)
 	{
 		ERR_MSG("pthread_create tid_sqlite");
 		return -1;
 	}
-/*
+
 	if(pthread_create(&tid_transfer, NULL, pthread_transfer, NULL) != 0)
 	{
 		ERR_MSG("pthread_create tid_transfer");
 		return -1;
 	}
-*/
+
 	if(pthread_create(&tid_analysis, NULL, pthread_analysis, NULL) != 0)
 	{
 		ERR_MSG("pthread_create tid_analysis");
@@ -185,6 +201,7 @@ void free_resources(void)
 	pthread_mutex_destroy(&mutex_refresh_updata);
 	pthread_mutex_destroy(&mutex_global);
 	pthread_mutex_destroy(&mutex_linklist);
+	pthread_mutex_destroy(&mutex_M0);
 
 	pthread_cond_destroy(&cond_sqlite);
 	pthread_cond_destroy(&cond_analysis);
@@ -196,5 +213,6 @@ void free_resources(void)
 	pthread_cond_destroy(&cond_camera);
 	pthread_cond_destroy(&cond_sms);
 	pthread_cond_destroy(&cond_refresh);
+	pthread_cond_destroy(&cond_M0);
 
 }

@@ -15,33 +15,40 @@ void sqlite_task(unsigned char type,struct storage_env_info env_buf);
 void *pthread_sqlite(void *arg)
 {
 
-	slinklist node;
+	slinklist node = NULL;
 	printf("this is pthread_sqlite\n");
 
 	init_storage_db();
 
 	slinkHead = sqlite_linkCreate();
+	printf("%s:  %s: __%d__shead: %p\n",__FILE__,__func__,__LINE__,slinkHead);
 	if(slinkHead == NULL)
 		return NULL;
 
 	while(1)
 	{
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 		pthread_mutex_lock(&mutex_sqlite);
 		pthread_cond_wait(&cond_sqlite,&mutex_sqlite);
 		pthread_mutex_unlock(&mutex_sqlite);
 
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 		while(1)
 		{
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 			pthread_mutex_lock (&mutex_slinklist);
 			if ((node = sqlite_GetLinknode (slinkHead)) == NULL)
 			{
 				pthread_mutex_unlock (&mutex_slinklist);
 				break;
 			}
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
+	printf("%s:  %s: __%d__ node :%p\n",__FILE__,__func__,__LINE__,node);
 			pthread_mutex_unlock (&mutex_slinklist);
 			sqlite_task(node->type,node->env_buf);
 			free(node);
 			node = NULL;
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 		}
 	}
 
@@ -54,11 +61,13 @@ void sqlite_task(unsigned char type,struct storage_env_info env_buf)
 	int res;
 	char sql[SQL_SIZE] = "";
 	char *errmsg;
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 	switch(type)
 	{
 	case COLLECT_INSERTER:
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 		bzero(sql,sizeof(sql));
-		sprintf(sql,"insert int collect_env values(%f, %f,%f)",env_buf.temperature,env_buf.humidity,env_buf.illumination);
+		sprintf(sql,"insert into collect_env values(%f, %f,%f)",env_buf.temperature,env_buf.humidity,env_buf.illumination);
 		printf("sql : %s __%d__%s\n",sql,__LINE__,__FILE__);
 		res = sqlite3_exec(db_storage,sql,NULL,NULL,&errmsg);
 		if(res != SQLITE_OK)
@@ -70,6 +79,7 @@ void sqlite_task(unsigned char type,struct storage_env_info env_buf)
 		}
 		break;
 	case STORAGE_UPDATE:
+	printf("%s:  %s: _____%d__\n",__FILE__,__func__,__LINE__);
 		bzero(sql,sizeof(sql));
 		sprintf(sql,"update environment set temperatureMax =%f,temperatureMin =%f,\
 				humidityMax =%f,humidityMin =%f,illuminationMax =%f,illuminationMin =%f where \

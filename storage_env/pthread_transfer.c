@@ -9,7 +9,7 @@ extern pthread_cond_t cond_analysis;
 extern pthread_mutex_t mutex_linklist;
 
 void serial_init(int fd)
-	{
+{
 	struct termios options;
 	tcgetattr(fd,&options);   //读取终端参数
 	options.c_cflag |= (CLOCAL | CREAD);  //忽略调制解调器线路状态，使用接收器
@@ -25,7 +25,7 @@ void serial_init(int fd)
 	cfsetispeed(&options,B115200);  //设置波特率为115200
 	cfsetospeed(&options,B115200);
 	tcsetattr(fd,TCSANOW,&options);   //设置终端参数
-	}
+}
 
 
 void *pthread_transfer(void *arg)
@@ -35,12 +35,13 @@ void *pthread_transfer(void *arg)
 	char flag = 0, check;
 	link_datatype buf; //数据节点
 	linkHead = CreateEmptyLinklist();
+	printf("linkHead = %p __%d__\n ",linkHead,__LINE__);
 	if((dev_uart_fd = open(DEV_ZIGBEE,O_RDWR)) < 0)
 	{
 		ERR_MSG("open ttyUSB0");
 		exit(-1);
 	}
-	
+
 	serial_init(dev_uart_fd);
 	printf("pthread_transfer is ok\n");
 
@@ -48,29 +49,38 @@ void *pthread_transfer(void *arg)
 	{
 		memset(&buf,0,sizeof(link_datatype));
 		read(dev_uart_fd,&check,1);
+		printf("---%c---%d--\n", check, __LINE__);
 		if(check == 's')
 		{
 			check = 0;
 			read(dev_uart_fd,&check,1);
+			printf("---%c---%d--\n", check, __LINE__);
 			if(check == 't')
 			{
 				check = 0;
 				read(dev_uart_fd,&check,1);
+				printf("---%c---%d--\n", check, __LINE__);
 				if(check == ':')
 				{
 					check = 0;
 					read(dev_uart_fd,&check,1);
+					printf("---%c---%d--\n", check, __LINE__);
 					if(check == 'e')
 					{
 						buf.msg_type = 'e';
 						usleep(1);
+						printf("------------------------------%d---\n", __LINE__);
 						if((len = read(dev_uart_fd,buf.text,LEN_ENV)) != LEN_ENV)
 						{
+								printf("---%d---%d--\n", len, __LINE__);
 							for(i = len; i < LEN_ENV; i++)
 							{
 								read(dev_uart_fd,buf.text+i,1);
+								printf("---%d---%d--\n", len, __LINE__);
 							}
+							printf("---%s---%d--\n", buf.text, __LINE__);
 						}
+						printf("---%s---%d--\n", buf.text, __LINE__);
 						flag = 1;
 					}
 					else if(check == 'r')
@@ -95,14 +105,17 @@ void *pthread_transfer(void *arg)
 		if(1 == flag)
 		{
 			pthread_mutex_lock(&mutex_linklist);
+			printf("------%d--\n", __LINE__);
 			if((InsertLinknode(buf)) == -1)
 			{
 				pthread_mutex_unlock(&mutex_linklist);
 				printf("NONMEM\n");
 			}
+			printf("------%d--\n", __LINE__);
 			pthread_mutex_unlock(&mutex_linklist);
 			flag = 0;
 			pthread_cond_signal(&cond_analysis);
+			printf("------%d--\n", __LINE__);
 		}
 	}
 	pthread_exit(NULL);
